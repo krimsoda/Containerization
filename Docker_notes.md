@@ -1,11 +1,12 @@
 # Docker Commands Cheat Sheet
 
-Below is a comprehensive list of essential Docker commands with detailed explanations for each. Use these commands to manage Docker containers, images, volumes, and networks effectively.
+Below is a comprehensive list of essential and advanced Docker commands with detailed explanations for each. Use these commands to manage Docker containers, images, volumes, and networks effectively.
 
 ```markdown
 # Docker Basics
 
 ## Check Docker Version
+```bash
 docker --version
 ```
 Displays the installed Docker version.
@@ -186,76 +187,410 @@ Streams the logs of a running container in real-time.
 
 ---
 
-# Docker Compose
+# Docker Compose Commands
 
 ## Start Services
 ```bash
 docker-compose up
 ```
-Starts the services defined in the `docker-compose.yml` file.
+Starts services defined in the `docker-compose.yml` file.
 
 ## Start Services in Detached Mode
 ```bash
 docker-compose up -d
 ```
-Starts the services in detached mode.
+Runs the services in the background.
 
 ## Stop Services
 ```bash
 docker-compose down
 ```
-Stops all running services defined in the `docker-compose.yml` file.
+Stops and removes containers, networks, and volumes created by `docker-compose up`.
+
+## View Logs
+```bash
+docker-compose logs
+```
+Displays logs for all services.
+
+## Scale Services
+```bash
+docker-compose up --scale <service-name>=<count>
+```
+Scales a service to the specified number of instances.
 
 ---
 
-# Advanced Commands
-
-## Build an Image
-```bash
-docker build -t <image-name>:<tag> <path>
+# Example `docker-compose.yml`
+```yaml
+version: '3.8'
+services:
+  web:
+    image: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./html:/usr/share/nginx/html
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - APP_ENV=production
+    depends_on:
+      - db
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
 ```
-Builds a Docker image from a `Dockerfile` in the specified path. Replace `<tag>` with the desired tag name.
-
-## Tag an Image
-```bash
-docker tag <image-id> <repository-name>:<tag>
-```
-Tags an image with a new name and tag for pushing to a registry.
-
-## Push an Image
-```bash
-docker push <repository-name>:<tag>
-```
-Uploads the tagged image to a Docker registry.
-
-## Prune Unused Resources
-```bash
-docker system prune
-```
-Removes unused containers, images, networks, and volumes to free up space.
 
 ---
 
 # Debugging and Troubleshooting
 
-## Check Resource Usage
+## View Build Context
 ```bash
-docker stats
+docker build --no-cache -t <image-name>:<tag> <path>
 ```
-Displays real-time resource usage (CPU, memory, etc.) for running containers.
+Forces Docker to rebuild the image without using cache, useful for debugging build issues.
 
-## Show Container Events
+## Debug Compose Files
 ```bash
-docker events
+docker-compose config
 ```
-Streams real-time events from the Docker daemon.
+Validates and displays the resolved configuration for a `docker-compose.yml` file.
 
 ---
 
-# Security
+# Security and Best Practices
 
-## Scan an Image for Vulnerabilities
+## Scan Images for Vulnerabilities
 ```bash
 docker scan <image-name>
 ```
 Performs a security scan on the specified image (requires Docker Desktop).
+
+## Limit Container Resources
+```bash
+docker run --memory="256m" --cpus="1.0" <image-name>
+```
+Limits the memory and CPU usage of a container to specified values.
+
+---
+
+# Managing Docker Swarm (Optional)
+
+## Initialize a Swarm
+```bash
+docker swarm init
+```
+Sets up the current machine as a Docker Swarm manager.
+
+## Deploy a Stack
+```bash
+docker stack deploy -c <compose-file> <stack-name>
+```
+Deploys a stack using a Docker Compose file in Swarm mode.
+
+## List Services in a Stack
+```bash
+docker stack services <stack-name>
+```
+Displays all services in the specified stack.
+
+## Remove a Stack
+```bash
+docker stack rm <stack-name>
+```
+Removes the specified stack from the swarm.
+```
+```
+
+
+# Advanced Docker Commands and Configurations
+
+## Docker Commands
+
+### 1. **`docker network create`**
+   - **Description**: Creates a new network for containers to communicate.
+   - **Syntax**:
+     ```bash
+     docker network create <network-name>
+     ```
+   - **Example**:
+     ```bash
+     docker network create --driver bridge my_network
+     ```
+
+### 2. **`docker volume create`**
+   - **Description**: Creates a named volume to persist data between container restarts.
+   - **Syntax**:
+     ```bash
+     docker volume create <volume-name>
+     ```
+   - **Example**:
+     ```bash
+     docker volume create my_volume
+     ```
+
+### 3. **`docker run --network`**
+   - **Description**: Runs a container in a specific network.
+   - **Syntax**:
+     ```bash
+     docker run --network <network-name> <image-name>
+     ```
+   - **Example**:
+     ```bash
+     docker run --network my_network nginx
+     ```
+
+### 4. **`docker exec`**
+   - **Description**: Executes a command inside a running container.
+   - **Syntax**:
+     ```bash
+     docker exec -it <container-id> <command>
+     ```
+   - **Example**:
+     ```bash
+     docker exec -it my_container bash
+     ```
+
+### 5. **`docker logs`**
+   - **Description**: Fetches logs from a running or stopped container.
+   - **Syntax**:
+     ```bash
+     docker logs <container-id>
+     ```
+   - **Example**:
+     ```bash
+     docker logs my_container
+     ```
+
+### 6. **`docker build --no-cache`**
+   - **Description**: Builds a Docker image without using cache, forcing a fresh build.
+   - **Syntax**:
+     ```bash
+     docker build --no-cache -t <image-name> .
+     ```
+   - **Example**:
+     ```bash
+     docker build --no-cache -t my_image .
+     ```
+
+### 7. **`docker-compose logs`**
+   - **Description**: Shows logs from all services in a Docker Compose setup.
+   - **Syntax**:
+     ```bash
+     docker-compose logs
+     ```
+   - **Example**:
+     ```bash
+     docker-compose logs
+     ```
+
+### 8. **`docker ps -a`**
+   - **Description**: Lists all containers, including stopped ones.
+   - **Syntax**:
+     ```bash
+     docker ps -a
+     ```
+   - **Example**:
+     ```bash
+     docker ps -a
+     ```
+
+### 9. **`docker stats`**
+   - **Description**: Displays real-time statistics for all running containers.
+   - **Syntax**:
+     ```bash
+     docker stats
+     ```
+   - **Example**:
+     ```bash
+     docker stats
+     ```
+
+### 10. **`docker-compose up --build`**
+   - **Description**: Builds images before starting containers in a Docker Compose setup.
+   - **Syntax**:
+     ```bash
+     docker-compose up --build
+     ```
+   - **Example**:
+     ```bash
+     docker-compose up --build
+     ```
+
+## Dockerfile Instructions
+
+### 1. **`FROM`**
+   - **Description**: Specifies the base image to use for the container.
+   - **Example**:
+     ```dockerfile
+     FROM ubuntu:20.04
+     ```
+
+### 2. **`RUN`**
+   - **Description**: Executes a command during the image build process.
+   - **Example**:
+     ```dockerfile
+     RUN apt-get update && apt-get install -y curl
+     ```
+
+### 3. **`COPY`**
+   - **Description**: Copies files from the host machine into the container.
+   - **Example**:
+     ```dockerfile
+     COPY ./local-file /path/in/container/
+     ```
+
+### 4. **`ADD`**
+   - **Description**: Similar to `COPY` but with additional features (e.g., extracting tar files).
+   - **Example**:
+     ```dockerfile
+     ADD ./local-file.tar.gz /path/in/container/
+     ```
+
+### 5. **`EXPOSE`**
+   - **Description**: Informs Docker that the container will listen on the specified network ports at runtime.
+   - **Example**:
+     ```dockerfile
+     EXPOSE 8080
+     ```
+
+### 6. **`CMD`**
+   - **Description**: Specifies the default command to run when the container starts.
+   - **Example**:
+     ```dockerfile
+     CMD ["python", "app.py"]
+     ```
+
+### 7. **`ENTRYPOINT`**
+   - **Description**: Sets the main command to run, and prevents overriding it.
+   - **Example**:
+     ```dockerfile
+     ENTRYPOINT ["python", "app.py"]
+     ```
+
+### 8. **`WORKDIR`**
+   - **Description**: Sets the working directory for any `RUN`, `CMD`, `ENTRYPOINT`, `COPY`, and `ADD` instructions.
+   - **Example**:
+     ```dockerfile
+     WORKDIR /app
+     ```
+
+### 9. **`ENV`**
+   - **Description**: Sets an environment variable.
+   - **Example**:
+     ```dockerfile
+     ENV MY_ENV_VAR=value
+     ```
+
+### 10. **`VOLUME`**
+   - **Description**: Creates a mount point with the specified path and marks it as holding persistent data.
+   - **Example**:
+     ```dockerfile
+     VOLUME ["/data"]
+     ```
+
+## Docker Compose Configuration
+
+### 1. **Basic `docker-compose.yml` Example**
+   - **Description**: A simple Docker Compose file that sets up a web server and database.
+   - **Example**:
+     ```yaml
+     version: '3.8'
+
+     services:
+       web:
+         image: nginx
+         ports:
+           - "8080:80"
+       db:
+         image: postgres
+         environment:
+           POSTGRES_PASSWORD: example
+     ```
+
+### 2. **Using Volumes with Docker Compose**
+   - **Description**: Demonstrates how to persist data with volumes.
+   - **Example**:
+     ```yaml
+     version: '3.8'
+
+     services:
+       web:
+         image: nginx
+         volumes:
+           - ./nginx.conf:/etc/nginx/nginx.conf
+       db:
+         image: postgres
+         volumes:
+           - postgres_data:/var/lib/postgresql/data
+
+     volumes:
+       postgres_data:
+     ```
+
+### 3. **Using Networks with Docker Compose**
+   - **Description**: Example of creating and using a custom network.
+   - **Example**:
+     ```yaml
+     version: '3.8'
+
+     services:
+       web:
+         image: nginx
+         networks:
+           - frontend
+       db:
+         image: postgres
+         networks:
+           - backend
+
+     networks:
+       frontend:
+       backend:
+     ```
+
+### 4. **Build Images with Docker Compose**
+   - **Description**: Builds a custom image for a service defined in `docker-compose.yml`.
+   - **Example**:
+     ```yaml
+     version: '3.8'
+
+     services:
+       web:
+         build: ./web
+         ports:
+           - "8080:80"
+       db:
+         image: postgres
+     ```
+
+### 5. **Using Environment Variables with Docker Compose**
+   - **Description**: Passes environment variables to containers.
+   - **Example**:
+     ```yaml
+     version: '3.8'
+
+     services:
+       web:
+         image: nginx
+         environment:
+           - MY_VAR=value
+       db:
+         image: postgres
+         environment:
+           POSTGRES_PASSWORD: example
+     ```
+
+---
+
+Feel free to modify and expand this as needed for your GitHub repository!
